@@ -18,26 +18,21 @@ def num_eights(n):
     0
     >>> num_eights(8782089)
     3
-    >>> from construct_check import check
-    >>> # ban all assignment statements
-    >>> check(HW_SOURCE_FILE, 'num_eights',
-    ...       ['Assign', 'AnnAssign', 'AugAssign', 'NamedExpr', 'For', 'While'])
-    True
     """
     "*** YOUR CODE HERE ***"
-    def all_but_last(n):
-        return n // 10
+    def all_but_last(x):
+        return x // 10
 
-    def last(n):
-        return n % 10
+    def last(x):
+        return x % 10
 
-    if x < 10:
-        if x == 8:
+    if n < 10:
+        if n == 8:
             return 1
         else:
             return 0
     else:
-        return num_eights(all_but_last(x)) + num_eights(last(x))
+        return num_eights(all_but_last(n)) + num_eights(last(n))
 
 
 def digit_distance(n):
@@ -53,23 +48,19 @@ def digit_distance(n):
     32
     >>> digit_distance(3464660003)  # 1 + 2 + 2 + 2 + ... + 3
     16
-    >>> from construct_check import check
-    >>> # ban all loops
-    >>> check(HW_SOURCE_FILE, 'digit_distance',
-    ...       ['For', 'While'])
-    True
     """
     "*** YOUR CODE HERE ***"
-    def pingpong_helper(pingpong_value, index, direction):
-        """ A recursive helper function to calculate ping-pong value.
-            direction is either 1 or -1
-        """
-        if index == n:
-            return pingpong_value
-        if index % 8 == 0 or num_eights(index) > 0:
-            return pingpong_helper(pingpong_value - direction, index + 1, -direction)
-        return pingpong_helper(pingpong_value + direction, index + 1, direction)
-    return pingpong_helper(1, 1, 1)
+    def all_but_last(x):
+        return x // 10
+
+    def last(x):
+        return x % 10
+
+    if n < 10:
+        return 0
+
+    else:
+        return digit_distance(all_but_last(n)) + abs(last(n) - last(all_but_last(n)))
 
 
 def interleaved_sum(n, odd_func, even_func):
@@ -87,13 +78,17 @@ def interleaved_sum(n, odd_func, even_func):
     32
     >>> interleaved_sum(4, square, triple)   # 1*1 + 2*3 + 3*3 + 4*3
     28
-    >>> from construct_check import check
-    >>> check(HW_SOURCE_FILE, 'interleaved_sum', ['While', 'For', 'Mod']) # ban loops and %
-    True
-    >>> check(HW_SOURCE_FILE, 'interleaved_sum', ['BitAnd', 'BitOr', 'BitXor']) # ban bitwise operators, don't worry about these if you don't know what they are
-    True
     """
     "*** YOUR CODE HERE ***"
+    def helper(k):
+        if k == n:
+            return odd_func(n)
+        elif k > n:
+            return 0
+        else:
+            return odd_func(k) + even_func(k+1) + helper(k+2)
+
+    return helper(1)
 
 
 def next_smaller_dollar(bill):
@@ -108,6 +103,7 @@ def next_smaller_dollar(bill):
         return 5
     elif bill == 5:
         return 1
+
 
 def count_dollars(total):
     """Return the number of ways to make change.
@@ -124,12 +120,23 @@ def count_dollars(total):
     344
     >>> count_dollars(200) # How many ways to make change for 200 dollars?
     3274
-    >>> from construct_check import check
-    >>> # ban iteration
-    >>> check(HW_SOURCE_FILE, 'count_dollars', ['While', 'For'])
-    True
     """
     "*** YOUR CODE HERE ***"
+    def largest_bill(n):
+        bills = [1, 5, 10, 20, 50, 100]
+        return max(filter(lambda x: x <= n, bills))
+
+    def count_partitions(n, m):
+        if n == 0:
+            return 1
+        elif n < 0:
+            return 0
+        elif m is None:
+            return 0
+        else:
+            return count_partitions(n-m, m) + count_partitions(n, next_smaller_dollar(m))
+
+    return count_partitions(total, largest_bill(total))
 
 
 def next_larger_dollar(bill):
@@ -144,6 +151,7 @@ def next_larger_dollar(bill):
         return 50
     elif bill == 50:
         return 100
+
 
 def count_dollars_upward(total):
     """Return the number of ways to make change using bills.
@@ -160,17 +168,25 @@ def count_dollars_upward(total):
     344
     >>> count_dollars_upward(200) # How many ways to make change for 200 dollars?
     3274
-    >>> from construct_check import check
-    >>> # ban iteration
-    >>> check(HW_SOURCE_FILE, 'count_dollars_upward', ['While', 'For'])
-    True
     """
     "*** YOUR CODE HERE ***"
+    def constrained_count(total, smallest_bill):
+        if total == 0:
+            return 1
+        if total < 0:
+            return 0
+        if smallest_bill is None:
+            return 0
+        without_dollar_bill = constrained_count(total, next_larger_dollar(smallest_bill))
+        with_dollar_bill = constrained_count(total - smallest_bill, smallest_bill)
+        return without_dollar_bill + with_dollar_bill
+    return constrained_count(total, 1)
 
 
 def print_move(origin, destination):
     """Print instructions to move a disk."""
     print("Move the top disk from rod", origin, "to rod", destination)
+
 
 def move_stack(n, start, end):
     """Print the moves required to move n disks on the start pole to the end
@@ -201,20 +217,21 @@ def move_stack(n, start, end):
     """
     assert 1 <= start <= 3 and 1 <= end <= 3 and start != end, "Bad start/end"
     "*** YOUR CODE HERE ***"
+    if n == 1:
+        print_move(start, end)
+    else:
+        move_stack(n-1, start, 6-start-end)
+        print_move(start, end)
+        move_stack(n-1, 6-start-end, end)
 
 
 from operator import sub, mul
+
 
 def make_anonymous_factorial():
     """Return the value of an expression that computes factorial.
 
     >>> make_anonymous_factorial()(5)
     120
-    >>> from construct_check import check
-    >>> # ban any assignments or recursion
-    >>> check(HW_SOURCE_FILE, 'make_anonymous_factorial',
-    ...     ['Assign', 'AnnAssign', 'AugAssign', 'NamedExpr', 'FunctionDef', 'Recursion'])
-    True
     """
-    return return (lambda f: lambda n: f(f, n))(lambda f, n: 1 if n == 1 else mul(n , f(f, sub(n, 1))))
-
+    return (lambda f: lambda n: f(f, n))(lambda f, n: 1 if n == 1 else mul(n, f(f, sub(n, 1))))

@@ -86,6 +86,7 @@ def simple_update(num_rolls, player_score, opponent_score, dice=six_sided):
     score = player_score + take_turn(num_rolls, player_score, opponent_score, dice)
     return score
 
+
 def is_prime(n):
     """Return whether N is prime."""
     if n == 1:
@@ -97,17 +98,36 @@ def is_prime(n):
         k += 1
     return True
 
+
 def num_factors(n):
     """Return the number of factors of N, including 1 and N itself."""
     # BEGIN PROBLEM 4
     "*** YOUR CODE HERE ***"
+    factors = []
+    for i in range(1, int(n**0.5) + 1):
+        if n % i == 0:
+            factors.append(i)
+            if i != n // i:
+                factors.append(n // i)
+    return len(factors)
     # END PROBLEM 4
+
 
 def sus_points(score):
     """Return the new score of a player taking into account the Sus Fuss rule."""
     # BEGIN PROBLEM 4
     "*** YOUR CODE HERE ***"
+    if num_factors(score) in [3, 4]:
+        new_score = score
+        while 1:
+            new_score += 1
+            if (is_prime(new_score)):
+                break
+        return new_score
+    else:
+        return score
     # END PROBLEM 4
+
 
 def sus_update(num_rolls, player_score, opponent_score, dice=six_sided):
     """Return the total score of a player who starts their turn with
@@ -115,6 +135,9 @@ def sus_update(num_rolls, player_score, opponent_score, dice=six_sided):
     """
     # BEGIN PROBLEM 4
     "*** YOUR CODE HERE ***"
+    new_score = simple_update(num_rolls, player_score, opponent_score, dice)
+    new_score = sus_points(new_score)
+    return new_score
     # END PROBLEM 4
 
 
@@ -154,6 +177,14 @@ def play(strategy0, strategy1, update,
     who = 0  # Who is about to take a turn, 0 (first) or 1 (second)
     # BEGIN PROBLEM 5
     "*** YOUR CODE HERE ***"
+    while (score0 < goal and score1 < goal):
+        if who == 0:
+            num_rolls = strategy0(score0, score1)
+            score0 = update(num_rolls, score0, score1, dice)
+        elif who == 1:
+            num_rolls = strategy1(score1, score0)
+            score1 = update(num_rolls, score1, score0, dice)
+        who = 1 - who
     # END PROBLEM 5
     return score0, score1
 
@@ -179,6 +210,9 @@ def always_roll(n):
     assert n >= 0 and n <= 10
     # BEGIN PROBLEM 6
     "*** YOUR CODE HERE ***"
+    def strategy(score, opponent_score):
+        return n
+    return strategy
     # END PROBLEM 6
 
 
@@ -210,6 +244,12 @@ def is_always_roll(strategy, goal=GOAL):
     """
     # BEGIN PROBLEM 7
     "*** YOUR CODE HERE ***"
+    base_case = strategy(0, 0)
+    for score0 in range(goal+1):
+        for score1 in range(goal+1):
+            if strategy(score0, score1) != base_case:
+                return False
+    return True
     # END PROBLEM 7
 
 
